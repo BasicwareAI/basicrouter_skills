@@ -33,11 +33,16 @@
   },
   "video_types": {
     "1": {"name": "Text to Video", "desc": "文生视频", "fields": ["text"], "needs_reference": false},
-    "2": {"name": "Image to Video (First Frame)", "desc": "图生视频-首帧", "fields": ["text", "imageUrls"], "needs_reference": true, "imageUrls_count": "1(首帧)"},
-    "3": {"name": "Image to Video (Head-Tail Frame)", "desc": "图生视频-首尾帧", "fields": ["text", "imageUrls"], "needs_reference": true, "imageUrls_count": "2(首帧+尾帧)"},
-    "4": {"name": "Image to Video (Reference)", "desc": "多图参考", "fields": ["text", "imageUrls或urls"], "needs_reference": true, "imageUrls_count": "多张参考"},
-    "5": {"name": "Omni Reference", "desc": "全能参考(图/视频/音频/主体)", "fields": ["text", "imageUrls", "videoUrls", "audioUrls", "elementIds", "multiPrompt?"], "needs_reference": true, "prompt_syntax": "提示词用 @图片N / @视频N / @音频N 引用对应数组第N项(从1起); element 用 <<<element_N>>>。例: 参考@图片1的男生和@图片2的女生..."},
-    "6": {"name": "Digital Human", "desc": "数字人", "fields": ["text", "imageUrls", "audioUrls"], "needs_reference": true, "imageUrls_count": "1(数字人形象)", "audioUrls_count": "1(驱动音频)"}
+    "2": {"name": "Image to Video (First Frame)", "desc": "图生视频-首帧", "fields": ["text", "imageUrls"], "needs_reference": true, "note": "imageUrls[0]=首帧"},
+    "3": {"name": "Image to Video (Head-Tail Frame)", "desc": "图生视频-首尾帧", "fields": ["text", "imageUrls"], "needs_reference": true, "note": "imageUrls[0]=首帧,[1]=尾帧"},
+    "4": {"name": "Image to Video (Reference)", "desc": "多图参考", "fields": ["text", "imageUrls或urls"], "needs_reference": true, "note": "多张参考图"},
+    "5": {"name": "Omni Reference", "desc": "全能参考(图/视频/音频/主体)", "fields": ["text", "imageUrls", "videoUrls", "audioUrls", "elementIds", "multiPrompt?"], "needs_reference": true, "prompt_syntax": "提示词可用 @图片N / @视频N / @音频N 引用素材(从1起)。各 provider 处理不同: Kling 转 <<<image_N>>> 占位并校验序号≤数组长度(音频不入引用, audioUrls 直接传作 sound_file); BytePlus/seedance 转成纯文本'图片N'描述(不校验, 音频也支持@音频N转文本)。element 用 <<<element_N>>>。例: 参考@图片1的男生和@图片2的女生..."},
+    "6": {"name": "Digital Human", "desc": "数字人", "fields": ["text", "imageUrls", "audioUrls"], "needs_reference": true, "note": "imageUrls[0]=形象, audioUrls[0]=驱动音频"}
+  },
+  "provider_notes": {
+    "kling": "全能参考(code5): @图片N/@视频N 转 <<<image_N>>>/<<<video_N>>> 精确引用 imageUrls/videoUrls 数组下标, 序号超数组长度会报错; 音频直接传 audioUrls(取第一个作 sound_file), 不用 @音频N; elementIds 配 <<<element_N>>>",
+    "byteplus": "seedance 全能参考(code5): @图片N/@视频N/@音频N 转成纯文本'图片N'等描述(不校验序号); imageUrls/videoUrls/audioUrls 各自作独立 content item 上传; 无精确数组关联, 靠文本+素材顺序",
+    "alibailian": "支持类型 1/2/3/4(无全能参考5); audioUrls 取第一个作 audio_url"
   },
   "model_specs": {
     "image_endpoint": "GET /v1/image-models",

@@ -40,7 +40,7 @@ jq '.video_types | to_entries[] | {code:.key, name:.value.name, desc:.value.desc
 | 2 | 图生视频-首帧 | `imageUrls`[0]=首帧 | 普通描述 |
 | 3 | 图生视频-首尾帧 | `imageUrls`[0]=首帧,[1]=尾帧 | 普通描述 |
 | 4 | 多图参考 | `imageUrls`/`urls` 多张参考 | 普通描述 |
-| 5 | **全能参考** | `imageUrls`+`videoUrls`+`audioUrls`+`elementIds` | **`@图片N`/`@视频N`/`@音频N` 引用** |
+| 5 | **全能参考** | `imageUrls`+`videoUrls`+`audioUrls`+`elementIds` | `@图片N`/`@视频N`/`@音频N`（各 provider 处理不同，见下） |
 | 6 | 数字人 | `imageUrls`[0]=形象,`audioUrls`[0]=驱动音频 | 普通描述 |
 
 用 **AskUserQuestion** 让用户选 videoType。注意：**不是所有模型都支持所有类型**，先看模型 `allowedVideoTypes` 有哪些 code，只在其中选。
@@ -68,10 +68,12 @@ URL 直接放进对应数组，不转换。
 
 **全能参考(code 5)特别注意**：
 - 素材分三类独立上传：`imageUrls`（图）、`videoUrls`（视频，对象数组）、`audioUrls`（音频）
-- 提示词里用 `@图片N` 引用 imageUrls 第 N 个、`@视频N` 引用 videoUrls 第 N 个、`@音频N` 引用 audioUrls 第 N 个（N 从 1 起，顺序与数组一致）
-- 也可用官方占位 `<<<image_N>>>` / `<<<video_N>>>` / `<<<element_N>>>`
+- 提示词可用 `@图片N` / `@视频N` / `@音频N` 引用素材（N 从 1 起）。`@图片` 和数字间有无空格都行（后端 `\s*`）
+- **各 provider 处理不同**（以所选模型的 provider 为准，查 manifest.json 的 `provider_notes`）：
+  - **Kling（kling-omni-video 等）**：`@图片N`/`@视频N` 转 `<<<image_N>>>`/`<<<video_N>>>` 精确引用数组下标，**序号超数组长度会报错**；音频直接传 `audioUrls`（取第一个作 `sound_file`），**不用 `@音频N`**；element 配 `<<<element_N>>>`
+  - **BytePlus / seedance**：`@图片N`/`@视频N`/`@音频N` 转成纯文本「图片N」描述（不校验序号）；imageUrls/videoUrls/audioUrls 各自作独立 content item 上传，无精确数组关联
+  - **阿里百炼**：不支持全能参考(5)，仅 1/2/3/4
 - 例：`参考@图片1的男生和@图片2的女生，两人在校园里散步，镜头跟随` → imageUrls 放两张图
-- 后端会校验引用序号不超数组长度，超了报错
 
 ### 4. 选模型与配置（AskUserQuestion）
 从缓存读每个模型 spec，按所选 videoType 过滤出支持该类型的模型：
@@ -116,8 +118,8 @@ body 示例：
 {"text":"镜头缓慢推进","model":"kling-image2video","videoType":2,"duration":5,"imageUrls":["data:image/png;base64,..."]}
 // 全能参考: 两张图引用
 {"text":"参考@图片1的男生和@图片2的女生，并肩散步","model":"kling-omni-video","videoType":5,"duration":5,"imageUrls":["data:...","data:..."]}
-// 全能参考: 图+视频+音频
-{"text":"@图片1的人物跟随@视频1的动作，配@音频1的背景音","model":"kling-omni-video","videoType":5,"imageUrls":["data:..."],"videoUrls":[{"videoUrl":"data:..."}],"audioUrls":["data:..."]}
+// 全能参考: 图+视频+音频(音频直接传 audioUrls, 不在提示词引用)
+{"text":"@图片1的人物跟随@视频1的动作","model":"kling-omni-video","videoType":5,"imageUrls":["data:..."],"videoUrls":[{"videoUrl":"data:..."}],"audioUrls":["data:..."]}
 ```
 
 - `submit` 立即返回 `taskId=...`
