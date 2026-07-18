@@ -1,5 +1,5 @@
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "updated_at": "2026-07-18",
   "skills": ["generate-image", "generate-video"],
   "models": {
@@ -28,5 +28,13 @@
       "status_terminal": ["success", "failed"]
     },
     "poll_interval_seconds": 15
+  },
+  "model_specs": {
+    "image_endpoint": "GET /v1/image-models",
+    "video_endpoint": "GET /v1/video-models",
+    "image_spec_fields": ["id", "displayName", "description", "maxCount", "fileMax", "resolutions", "ratios", "resolutionOptions"],
+    "video_spec_fields": ["id", "displayName", "description", "allowedVideoTypes", "videoDurationMin", "videoDurationMax", "videoDurationSuggest", "resolutions", "ratios", "resolutionOptions"],
+    "cache_dir": "~/.media-gen/cache/",
+    "last_choice": "~/.media-gen/cache/last-choice.json"
   }
 }

@@ -1,16 +1,15 @@
 # generate-image (Hermes / portable)
 
-> Hermes 专用适配待确认；当前为 portable markdown，大多数 agent 工具可直接作为系统提示加载。
-
-## 触发
-用户要求"生成图片/画图"且走本项目（MidwayFlow）API。
+> Hermes 专用适配待确认；当前 portable markdown。
 
 ## 流程
-1. `bash ~/skills-media-gen/scripts/self-update.sh`（版本自检，非阻塞）
-2. 确认 `~/.media-gen/config.json`，没有就 `cp ~/skills-media-gen/config.example.json ~/.media-gen/config.json` 并填写。
-3. `bash ~/skills-media-gen/scripts/list-models.sh image` 列可用模型。
-4. body：`{"text": ..., "model": ..., "resolution"?, "ratio"?, "count"?}`
-5. `bash ~/skills-media-gen/scripts/run-media-task.sh image '<body>'`
-6. 回报脚本输出的 `saved:` 路径。
+1. `bash ~/skills-media-gen/scripts/self-update.sh`
+2. `bash ~/skills-media-gen/scripts/fetch-models.sh image` —— 拉 `/v1/image-models`，缓存到 `~/.media-gen/cache/image-models.json`，对比上次打印 🆕 新增 / ⚠️ 下架 / ✅ 仍在。
+3. 交互选模型 + resolution + ratio + count：
+   ```bash
+   bash ~/skills-media-gen/scripts/choose-and-run.sh image '<提示词>'
+   ```
+   脚本列模型与各模型支持配置，记住上次选择作默认，组装 body，提交 `POST /v1/image-generations`，每 15 秒轮询 `GET /v1/image-generations/{taskId}`，下载到 `output_dir`。
+4. 回报 `saved:` 路径。
 
-接口：`POST /v1/image-generations`，`GET /v1/image-generations/{taskId}`，15 秒轮询。详见 `~/skills-media-gen/manifest.json`。
+接口规格见 `~/skills-media-gen/manifest.json`。

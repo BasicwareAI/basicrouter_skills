@@ -1,20 +1,18 @@
 ---
 name: generate-video
-description: 通过 MidwayFlow OpenAPI 生成视频，15 秒轮询，下载到本地。
+description: 通过 MidwayFlow OpenAPI 生成视频，先拉模型对比更新/下架，交互选模型与配置，提交后 15 秒轮询，下载到本地。
 ---
 
 # generate-video (Codex)
 
-当用户要求生成视频（文生/图生）且走本项目 API 时执行。
-
-## 步骤
+## 流程
 1. `bash ~/skills-media-gen/scripts/self-update.sh`
-2. 确认 `~/.media-gen/config.json` 存在。
-3. 列模型：`bash ~/skills-media-gen/scripts/list-models.sh video`
-4. 组装 body `{text, model, videoType?, resolution?, ratio?, duration?, imageUrls?}` 并执行：
+2. `bash ~/skills-media-gen/scripts/fetch-models.sh video` —— 拉 `/v1/video-models`，缓存并对比 🆕/⚠️/✅，给用户看。
+3. 交互选模型 + videoType + resolution + ratio + duration：
    ```bash
-   bash ~/skills-media-gen/scripts/run-media-task.sh video '<body>'
+   bash ~/skills-media-gen/scripts/choose-and-run.sh video '<提示词>'
    ```
-5. 把脚本输出的 `saved:` 路径回报给用户。
+   脚本显示每个模型支持的配置，记住上次选择作默认，组装 body，提交 `POST /v1/video-generations`，每 15 秒轮询 `GET /v1/video-generations/{taskId}`，下载到 `output_dir`。图生视频在交互后补 `imageUrls`。
+4. 把 `saved:` 路径回报给用户。
 
-接口：`POST /v1/video-generations` → `GET /v1/video-generations/{taskId}`，轮询间隔 15 秒，建议 `max_seconds ≥ 600`。详见 `@~/skills-media-gen/manifest.json`。
+视频较慢，`poll.max_seconds` 建议 ≥ 600。接口规格见 `@~/skills-media-gen/manifest.json`。

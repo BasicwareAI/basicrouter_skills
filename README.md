@@ -18,9 +18,18 @@ bash install.sh all      # 软链到 ~/.claude/skills、~/.codex/prompts、~/.he
 见 [config.example.json](config.example.json)：base_url、auth header、端点路径、轮询参数、输出目录。
 
 ## 用法
-- 列模型：`bash scripts/list-models.sh image|video`（加 `--remote` 从 API 实时拉）
-- 生图：`bash scripts/run-media-task.sh image '{"text":"...","model":"kling-omni-image"}'`
-- 生视频：`bash scripts/run-media-task.sh video '{"text":"...","model":"kling-text2video"}'`
+完整流程：**自检更新 → 拉模型并对比更新/下架 → 选模型与配置 → 提交 → 15s 轮询 → 下载**。
+
+- 拉模型 + 对比更新/下架：`bash scripts/fetch-models.sh image|video`（缓存到 `~/.media-gen/cache/`，与上次 diff）
+- 交互选模型并生成（终端 read，Codex/Hermes/generic 用）：
+  ```bash
+  bash scripts/choose-and-run.sh image '一只戴墨镜的猫'
+  bash scripts/choose-and-run.sh video '海浪拍打礁石'
+  ```
+  会列模型、显示每个模型支持的配置、以 `~/.media-gen/cache/last-choice.json` 上次选择作默认、组装 body、提交 + 轮询 + 下载。
+- Claude Code 直接说"生成图片/视频"，skill 会用 AskUserQuestion 引导选模型与配置。
+- 手动直接提交：`bash scripts/run-media-task.sh image|video '<body-json>'`
+- 旧的本地清单：`bash scripts/list-models.sh image|video`（读 manifest，加 `--remote` 从 API 拉）
 
 ## 版本与更新
 - 版本号在 [VERSION](VERSION) 与 [manifest.json](manifest.json)。
