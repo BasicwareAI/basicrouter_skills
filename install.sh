@@ -2,7 +2,7 @@
 # 把各工具适配层软链到对应工具的 skills/prompts 目录。
 #   bash install.sh [claude|codex|hermes|generic|all]   默认 all
 set -u
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TARGET="${1:-all}"
 mkdir -p "$HOME/.media-gen"
 
@@ -44,5 +44,5 @@ esac
 CFG="$HOME/.media-gen/config.json"
 if [ ! -f "$CFG" ]; then
   cp "$REPO_ROOT/config.example.json" "$CFG"
-  echo "已生成 $CFG，请填写 base_url 和 auth.value"
+  echo "已生成 ${CFG}, 请填写 base_url 和 auth.value"
 fi
