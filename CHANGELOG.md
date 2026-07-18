@@ -1,3 +1,10 @@
+
+## 0.3.0 — 2026-07-18
+- 视频新增 6 种 videoType 能力表(manifest.json video_types), 每种类型的素材字段/限制写清
+- 全能参考(code 5): imageUrls/videoUrls/audioUrls 分开上传, 提示词用 @图片N/@视频N/@音频N 引用
+- image-to-datauri.sh 扩展: 支持视频/音频文件, 新增 --json-obj 输出对象数组(供 videoUrls)
+- generate-video SKILL.md 重写: videoType 选择流程 + 全能参考引用语法 + 素材收集
+- manifest 更新模型清单(下架 kling-omni-image 等), submit_body 补全 video 全字段
 # Changelog
 
 ## 0.2.0 — 2026-07-18
