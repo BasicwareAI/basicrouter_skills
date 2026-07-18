@@ -1,0 +1,32 @@
+{
+  "version": "0.1.0",
+  "updated_at": "2026-07-18",
+  "skills": ["generate-image", "generate-video"],
+  "models": {
+    "image": [
+      {"id": "kling-omni-image", "provider": "kling"},
+      {"id": "dall-e-3", "provider": "openai"}
+    ],
+    "video": [
+      {"id": "kling-omni-video", "provider": "kling"},
+      {"id": "kling-text2video", "provider": "kling"},
+      {"id": "kling-image2video", "provider": "kling"}
+    ]
+  },
+  "api": {
+    "image": {
+      "submit": "POST /v1/image-generations",
+      "query": "GET /v1/image-generations/{taskId}",
+      "submit_body": {"text": "string", "model": "string", "resolution": "string?", "ratio": "string?", "count": "int?"},
+      "query_body": {"taskId": "string", "status": "string", "images": "string[]?", "errorMessage": "string?"},
+      "status_terminal": ["success", "failed"]
+    },
+    "video": {
+      "submit": "POST /v1/video-generations",
+      "query": "GET /v1/video-generations/{taskId}",
+      "submit_body": {"text": "string", "model": "string", "videoType": "int?", "resolution": "string?", "ratio": "string?", "duration": "long?", "imageUrls": "string[]?"},
+      "status_terminal": ["success", "failed"]
+    },
+    "poll_interval_seconds": 15
+  }
+}

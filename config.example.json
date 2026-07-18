@@ -1,0 +1,20 @@
+{
+  "base_url": "http://localhost:8081/api",
+  "auth": {
+    "header": "Authorization",
+    "value": "Bearer <JWT>"
+  },
+  "endpoints": {
+    "createImage": "/v1/image-generations",
+    "getImageByTaskId": "/v1/image-generations/{taskId}",
+    "imageModels": "/v1/image-models",
+    "createVideo": "/v1/video-generations",
+    "getVideoByTaskId": "/v1/video-generations/{taskId}",
+    "videoModels": "/v1/video-models"
+  },
+  "poll": {
+    "interval_seconds": 15,
+    "max_seconds": 600
+  },
+  "output_dir": "./outputs"
+}
