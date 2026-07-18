@@ -17,6 +17,18 @@ bash install.sh all      # 软链到 ~/.claude/skills、~/.codex/prompts、~/.he
 ## 配置（~/.media-gen/config.json）
 见 [config.example.json](config.example.json)：base_url、auth header、端点路径、轮询参数、输出目录。
 
+### 查看 / 更新配置
+```bash
+bash scripts/config.sh                          # 交互式逐项更新（回车保留当前值）
+bash scripts/config.sh show                     # 打印当前配置（token 脱敏）
+bash scripts/config.sh set base_url <url>       # 设 base_url
+bash scripts/config.sh set token <raw-token>    # 设 token（自动加 Bearer 前缀；已带则不重复）
+bash scripts/config.sh set output_dir <path>    # 设输出目录
+bash scripts/config.sh set poll_interval <sec>  # 设轮询间隔
+bash scripts/config.sh set poll_max <sec>       # 设轮询超时
+```
+首次 `install.sh` 也会走交互式引导。换环境/换 token 时直接用 `set` 或交互式即可，改完即生效（下次 skill 调用就用新值）。
+
 ## 用法
 完整流程：**自检更新 → 拉模型并对比更新/下架 → 选模型与配置 → 提交 → 15s 轮询 → 下载**。
 
