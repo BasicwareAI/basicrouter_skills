@@ -187,9 +187,13 @@ bash scripts/fetch-models.sh video
 bash scripts/choose-and-run.sh image '一只戴墨镜的猫'
 bash scripts/choose-and-run.sh video '海浪拍打礁石'
 
-# 或跳过交互，直接提交已知 body：
-bash scripts/run-media-task.sh image '{"text":"一只戴墨镜的猫","model":"kling-omni-image","resolution":"1080P","ratio":"1:1"}'
+# 或跳过交互，直接提交已知 body（一体模式，同步阻塞）：
+bash scripts/run-media-task.sh image '{"text":"一只戴墨镜的猫","model":"seedream-5.0","resolution":"2k","ratio":"1:1"}'
 bash scripts/run-media-task.sh video '{"text":"海浪拍打礁石","model":"kling-text2video","duration":5}'
+
+# 异步模式（不阻塞，推荐慢任务/视频）：
+bash scripts/run-media-task.sh submit image '{"text":"...","model":"seedream-5.0"}'   # 秒回 taskId=...
+bash scripts/run-media-task.sh poll image <taskId> &                                  # 后台轮询+下载
 
 # 查看本地模型清单（读 manifest；加 --remote 从 API 实时拉）
 bash scripts/list-models.sh image

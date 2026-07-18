@@ -39,11 +39,29 @@ jq -r '.data[] | {id, displayName, description, allowedVideoTypes, resolutions, 
 ### 3. 记住选择
 写回 `~/.media-gen/cache/last-choice.json` 的 `.video`。
 
-### 4. 提交 + 轮询 + 下载
+### 4. 提交 + 轮询 + 下载（异步，不阻塞主任务）
+
+**重要**：视频生成很慢（几分钟到十几分钟），同步轮询会长时间卡住主任务。**务必用拆分模式**——提交后用后台任务或子 agent 轮询：
+
+```bash
+# 4a. 提交（秒回 taskId）
+bash ~/skills-media-gen/scripts/run-media-task.sh submit video '<body-json>'
+# 输出: taskId=...
+
+# 4b. 后台轮询 + 下载（不阻塞）
+bash ~/skills-media-gen/scripts/run-media-task.sh poll video <taskId> &
+```
+
+body = `{"text":<提示词>,"model":<模型>,"videoType"?,"resolution"?,"ratio"?,"duration"?,"imageUrls"?}`（图生视频把参考图 URL 放 `imageUrls`）。
+
+- `submit` 只提交，立即返回 `taskId=...`
+- `poll` 每 15 秒查一次到 `success`/`failed`，下载到 `output_dir`，打印 `saved: <path>`
+- 视频较慢，`poll.max_seconds` 建议 ≥ 600；推荐用 Agent 工具起子 agent 跑 `poll`，主任务继续
+
+一体模式（同步阻塞，仅快速任务用）：
 ```bash
 bash ~/skills-media-gen/scripts/run-media-task.sh video '<body-json>'
 ```
-body = `{"text":<提示词>,"model":<模型>,"videoType"?,"resolution"?,"ratio"?,"duration"?,"imageUrls"?}`（图生视频把参考图 URL 放 `imageUrls`）。脚本每 15 秒轮询，建议 `poll.max_seconds ≥ 600`。
 
 ### 5. 回报
 把 `saved:` 路径给用户；失败返回 `errorMessage`。

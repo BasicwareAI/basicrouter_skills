@@ -42,11 +42,29 @@ jq -r '.data[] | {id, displayName, description, resolutions, ratios, maxCount}' 
 jq --argjson c '{"model":"...","resolution":"...","ratio":"...","count":N}' '.image=$c' ~/.media-gen/cache/last-choice.json
 ```
 
-### 4. 提交 + 轮询 + 下载
+### 4. 提交 + 轮询 + 下载（异步，不阻塞主任务）
+
+**重要**：图片生成耗时几十秒到几分钟，同步轮询会卡住主任务。用**拆分模式**——提交后用后台 Bash 任务轮询，主任务立即继续：
+
+```bash
+# 4a. 提交（秒回 taskId）
+bash ~/skills-media-gen/scripts/run-media-task.sh submit image '<body-json>'
+# 输出: taskId=2af008d2-...
+
+# 4b. 后台轮询 + 下载（不阻塞，完成后通知）
+bash ~/skills-media-gen/scripts/run-media-task.sh poll image <taskId> &
+```
+
+body = `{"text":<提示词>,"model":<选的模型>,"resolution"?,"ratio"?,"count"?}`。
+
+- `submit` 只提交，立即返回 `taskId=...`
+- `poll` 每 15 秒查一次到 `success`/`failed`，下载图片到 `output_dir`，打印 `saved: <path>`
+- 若工具支持子 agent，也可用 Agent 工具起一个子 agent 跑 `poll`，主任务继续干别的
+
+也可以用旧的一体模式（同步阻塞，简单但会卡住）：
 ```bash
 bash ~/skills-media-gen/scripts/run-media-task.sh image '<body-json>'
 ```
-body = `{"text":<提示词>,"model":<选的模型>,"resolution"?,"ratio"?,"count"?}`。脚本每 15 秒轮询到 `success`/`failed`，下载图片到 `output_dir`，打印 `saved: <path>`。
 
 ### 5. 回报
 把 `saved:` 本地路径给用户；失败把 `errorMessage` 原样返回。接口规格见 `~/skills-media-gen/manifest.json`。
