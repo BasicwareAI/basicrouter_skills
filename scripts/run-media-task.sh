@@ -38,10 +38,14 @@ while :; do
   echo "status=$STATUS"
   case "$STATUS" in
     success)
-      # 兼容 images 数组或单个 url 字段
-      URLS=$(echo "$QRESP" | jq -r ".data.$URL_FIELD[]? // .data.url? // empty" 2>/dev/null || true)
+      # images 字段可能是原生数组, 也可能是字符串化的 JSON 数组 "[\"url\",...]"
+      URLS=$(echo "$QRESP" | jq -r "
+        .data.$URL_FIELD as \$v |
+        if (\$v | type) == \"string\" then (\$v | fromjson) else \$v end |
+        if type == \"array\" then .[] else . end
+      " 2>/dev/null || true)
       if [ -z "$URLS" ]; then
-        URLS=$(echo "$QRESP" | jq -r ".data.resultUrl? // .data.videoUrl? // empty" 2>/dev/null || true)
+        URLS=$(echo "$QRESP" | jq -r ".data.url? // .data.resultUrl? // .data.videoUrl? // empty" 2>/dev/null || true)
       fi
       TS=$(date +%Y%m%d-%H%M%S)
       i=1
