@@ -47,38 +47,32 @@ curl --version && jq --version && git --version
 
 ## 安装教程
 
-### 1. 克隆仓库
+### 方式一：一行命令（推荐，小白友好）
 
 ```bash
-git clone git@github.com:BasicwareAI/basicrouter_skills.git ~/skills-media-gen
-cd ~/skills-media-gen
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/BasicwareAI/basicrouter_skills/main/setup.sh)"
 ```
 
-> 默认克隆到 `~/skills-media-gen`。放别处也行，但 skill 脚本默认按这个路径找——若改了路径，调用时注意软链指向。
+这一条命令自动完成：检查依赖 → 克隆仓库 → 软链适配层 → 配置引导。中途会提示你填 `base_url` 和 `token`。
 
-### 2. 运行安装脚本
+只想装某一种工具，追加参数：
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/BasicwareAI/basicrouter_skills/main/setup.sh)" -- claude
+# 或 codex / hermes / all（默认 all）
+```
+
+> 用 HTTPS 克隆，无需配置 GitHub SSH key。
+
+### 方式二：手动 clone 后安装
 
 ```bash
-bash install.sh all
+git clone https://github.com/BasicwareAI/basicrouter_skills.git ~/skills-media-gen
+bash ~/skills-media-gen/install.sh all
 ```
 
-这一步会：
+`install.sh` 会软链各工具适配层并进入配置引导。只装某一种：`install.sh claude | codex | hermes`。
 
-1. 把各工具的适配层**软链**到对应目录：
-   - `~/.claude/skills/generate-image`、`generate-video`
-   - `~/.codex/prompts/generate-image.md`、`generate-video.md`
-   - `~/.hermes/skills/generate-image.md`、`generate-video.md`
-2. 进入**交互式配置引导**，提示你填 `base_url` 和 `token`（见下节）。
-
-只装某一种工具也行：
-```bash
-bash install.sh claude    # 仅 Claude Code
-bash install.sh codex     # 仅 Codex CLI
-bash install.sh hermes    # 仅 Hermes
-bash install.sh all       # 全部（默认）
-```
-
-### 3. 填写配置
+### 安装时填配置
 
 安装脚本会依次问：
 ```
@@ -88,12 +82,17 @@ token:    你的 API token 或 JWT        # 直接粘裸 token，脚本自动加
 
 看到 `✅ 配置完成` 即装好。若回车跳过留空，会提示 `⚠️ 未填写`，skill 无法调用——稍后用 `config.sh` 补上即可。
 
-### 一行完成（克隆 + 安装 + 配置）
+> 通过 `curl | bash` 管道安装时无法交互填配置，脚本会只装好软链并提示你后续运行 `bash ~/skills-media-gen/scripts/config.sh` 补配置。直接在终端跑方式一的命令（非管道）则可当场填。
 
-```bash
-git clone git@github.com:BasicwareAI/basicrouter_skills.git ~/skills-media-gen \
-  && bash ~/skills-media-gen/install.sh all
-```
+### 软链落地位置
+
+| 工具 | 落地位置 |
+|---|---|
+| Claude Code | `~/.claude/skills/generate-image`、`generate-video` |
+| Codex CLI | `~/.codex/prompts/generate-image.md`、`generate-video.md` |
+| Hermes | `~/.hermes/skills/generate-image.md`、`generate-video.md` |
+
+> 默认克隆到 `~/skills-media-gen`。放别处用 `setup.sh --dir <path>` 或直接 `git clone` 到别处——但 skill 脚本默认按 `~/skills-media-gen` 找，改路径后注意软链指向。
 
 ---
 

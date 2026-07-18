@@ -68,7 +68,7 @@ cmd_interactive() {
   [ -n "$cur" ] && cur_disp="当前: $cur" || cur_disp="(未设置)"
   echo " MidwayFlow OpenAPI 的 base_url (含 /api 前缀), 例如 http://localhost:8081/api  [$cur_disp]"
   printf "  base_url: "
-  read -r IN_BASE || IN_BASE=""
+  { read -r IN_BASE || IN_BASE=""; } </dev/tty 2>/dev/null || read -r IN_BASE || IN_BASE=""
   if [ -n "$IN_BASE" ]; then
     jq --arg b "$IN_BASE" '.base_url=$b' "$CFG" >"$CFG.tmp" && mv "$CFG.tmp" "$CFG"
   fi
@@ -76,7 +76,7 @@ cmd_interactive() {
   if needs_token; then cur_disp="(未设置)"; else cur_disp="(已设置, 已脱敏)"; fi
   echo " API token / API Key (将作为 Authorization: Bearer <token>; 不带 Bearer 前缀, 脚本自动加)  [$cur_disp]"
   printf "  token: "
-  read -r IN_TOKEN || IN_TOKEN=""
+  { read -r IN_TOKEN || IN_TOKEN=""; } </dev/tty 2>/dev/null || read -r IN_TOKEN || IN_TOKEN=""
   if [ -n "$IN_TOKEN" ]; then
     case "$IN_TOKEN" in Bearer\ *) ;; *) IN_TOKEN="Bearer $IN_TOKEN" ;; esac
     jq --arg t "$IN_TOKEN" '.auth.value=$t' "$CFG" >"$CFG.tmp" && mv "$CFG.tmp" "$CFG"
@@ -96,6 +96,9 @@ case "${1:-}" in
   "") cmd_interactive ;;
   show) cmd_show ;;
   set) shift; cmd_set "$@" ;;
+  needs-config)
+    # 退出码 0 = 需要配置(有缺项); 1 = 已配置完整。供 install.sh --no-config 用
+    if needs_baseurl || needs_token; then exit 0; else exit 1; fi ;;
   -h|--help|help)
     sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//' ;;
   *) echo "用法: config.sh [show | set <key> <value>]"; echo "  key 可用: base_url token output_dir poll_interval poll_max"; exit 1 ;;

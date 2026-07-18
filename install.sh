@@ -3,7 +3,16 @@
 #   bash install.sh [claude|codex|hermes|generic|all]   默认 all
 set -u
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TARGET="${1:-all}"
+NO_CONFIG="0"
+TARGET="all"
+for a in "$@"; do
+  case "$a" in
+    --no-config) NO_CONFIG="1" ;;
+    claude|codex|hermes|generic|all) TARGET="$a" ;;
+    -h|--help) sed -n '2,4p' "$0"; exit 0 ;;
+    *) echo "未知参数: $a (用法: install.sh [all|claude|codex|hermes] [--no-config])"; exit 1 ;;
+  esac
+done
 CFG_DIR="$HOME/.media-gen"
 CFG="$CFG_DIR/config.json"
 mkdir -p "$CFG_DIR"
@@ -45,5 +54,11 @@ esac
 # ── 配置引导 (复用 scripts/config.sh 的交互逻辑) ──
 # 没有配置就先拷贝默认值作为起点
 [ -f "$CFG" ] || cp "$REPO_ROOT/config.example.json" "$CFG"
+
+if [ "$NO_CONFIG" = "1" ]; then
+  # 非交互场景 (如 curl|bash): 跳过交互配置, 只确保配置文件存在
+  exit 0
+fi
+
 echo ""
 exec bash "$REPO_ROOT/scripts/config.sh"

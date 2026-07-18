@@ -23,7 +23,7 @@ echo "== 选择 $KIND 模型 =="
 jq -r '.data[] | "\(.id)\t\(.displayName // .id)\t\(.description // "")"' "$MODELS" | cat -A 2>/dev/null || \
   jq -r '.data[] | "\(.id)  |  \(.displayName // .id)  |  \(.description // "")"' "$MODELS"
 if [ -n "$LAST_MODEL" ]; then echo "（上次选过: $LAST_MODEL，直接回车沿用）"; fi
-read -p "模型 id: " M </dev/tty
+read -p "模型 id: " M </dev/tty 2>/dev/null || true
 [ -n "$M" ] || M="$LAST_MODEL"
 [ -n "$M" ] || { echo "未选模型"; exit 1; }
 
@@ -34,14 +34,14 @@ SPEC=$(jq -c --arg m "$M" '.data[]|select(.id==$m)' "$MODELS")
 RES_LIST=$(echo "$SPEC" | jq -r '(.resolutions // [])[]' 2>/dev/null || true)
 if [ -n "$RES_LIST" ]; then
   echo "可选分辨率: $(echo "$RES_LIST" | tr '\n' ' ')"
-  read -p "resolution[${LAST_RES}]: " R </dev/tty
+  read -p "resolution[${LAST_RES}]: " R </dev/tty 2>/dev/null || true
   [ -n "$R" ] || R="$LAST_RES"
 fi
 # 比例
 RATIO_LIST=$(echo "$SPEC" | jq -r '(.ratios // [])[]' 2>/dev/null || true)
 if [ -n "$RATIO_LIST" ]; then
   echo "可选比例: $(echo "$RATIO_LIST" | tr '\n' ' ')"
-  read -p "ratio[${LAST_RATIO}]: " RT </dev/tty
+  read -p "ratio[${LAST_RATIO}]: " RT </dev/tty 2>/dev/null || true
   [ -n "$RT" ] || RT="$LAST_RATIO"
 fi
 
@@ -52,7 +52,7 @@ BODY=$(jq -cn --arg t "$PROMPT" --arg m "$M" '{text:$t, model:$m}')
 if [ "$KIND" = "image" ]; then
   MAXC=$(echo "$SPEC" | jq -r '.maxCount // empty')
   [ -n "$MAXC" ] && echo "单次最多 ${MAXC} 张"
-  read -p "count[${LAST_COUNT}]: " C </dev/tty
+  read -p "count[${LAST_COUNT}]: " C </dev/tty 2>/dev/null || true
   [ -n "$C" ] || C="$LAST_COUNT"
   [ -n "$C" ] && BODY=$(echo "$BODY" | jq -c --argjson c "$C" '.count=$c')
 fi
@@ -61,13 +61,13 @@ if [ "$KIND" = "video" ]; then
   VTYPES=$(echo "$SPEC" | jq -r '(.allowedVideoTypes // [])[] | "\(.code)=\(.name)"' 2>/dev/null || true)
   if [ -n "$VTYPES" ]; then
     echo "可选 videoType: $(echo "$VTYPES" | tr '\n' ' ')"
-    read -p "videoType[${LAST_VTYPE}]: " VT </dev/tty
+    read -p "videoType[${LAST_VTYPE}]: " VT </dev/tty 2>/dev/null || true
     [ -n "$VT" ] || VT="$LAST_VTYPE"
     [ -n "$VT" ] && BODY=$(echo "$BODY" | jq -c --argjson v "$VT" '.videoType=$v')
   fi
   DMIN=$(echo "$SPEC" | jq -r '.videoDurationMin // empty'); DMAX=$(echo "$SPEC" | jq -r '.videoDurationMax // empty')
   [ -n "$DMIN" ] && echo "时长范围 ${DMIN}-${DMAX}s，建议: $(echo "$SPEC" | jq -r '(.videoDurationSuggest // [])|join(",")')"
-  read -p "duration[${LAST_DUR}]: " D </dev/tty
+  read -p "duration[${LAST_DUR}]: " D </dev/tty 2>/dev/null || true
   [ -n "$D" ] || D="$LAST_DUR"
   [ -n "$D" ] && BODY=$(echo "$BODY" | jq -c --argjson d "$D" '.duration=$d')
 fi
